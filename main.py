@@ -20,7 +20,7 @@ st.title("Katılım Durumu Yönetimi")
 # ——— Fetch all records ———
 try:
     records = airtable.get_all()
-except HTTPError as e:
+except HTTPError:
     st.error("Airtable’a bağlanırken hata: lütfen yetkileri ve tablo adını kontrol edin.")
     st.stop()
 
@@ -61,13 +61,12 @@ edited_df = st.data_editor(
 # ——— Apply updates button ———
 if st.button("Apply"):
     updates = []
-    # Compare original vs edited
     for i in edited_df.index:
         before = display_df.at[i, "is_attended"]
         after  = edited_df.at[i, "is_attended"]
         if before != after:
             rec_id = df.at[i, "_rec_id"]
-            updates.append((rec_id, bool(after)))   # cast to native bool here
+            updates.append((rec_id, bool(after)))  # ensure native bool
 
     if not updates:
         st.info("Herhangi bir değişiklik bulunamadı.")
@@ -81,4 +80,4 @@ if st.button("Apply"):
                 st.error(f"Kayıt {rec_id} güncellenirken hata: {e}")
         if not errors:
             st.success("Değişiklikler başarıyla kaydedildi!")
-            st.experimental_rerun()
+            st.rerun()  # use st.rerun() instead of experimental_rerun()
